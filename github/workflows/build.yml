@@ -1,0 +1,19 @@
+name: CI Build Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+# VULNERABILITY: Global write-all permissions for GITHUB_TOKEN
+# This allows a compromised build to modify code or delete resources.
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Run build process
+        run: echo "Building CyberLogistics Platform..."
