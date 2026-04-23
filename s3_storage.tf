@@ -8,7 +8,6 @@ resource "aws_s3_bucket" "customer_data_storage" {
 resource "aws_s3_bucket_public_access_block" "insecure_config" {
   bucket = aws_s3_bucket.customer_data_storage.id
 
-  # MISCONFIGURATION: Allows public access to the bucket
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false
@@ -35,53 +34,12 @@ resource "aws_s3_bucket_policy" "wildcard_admin_access" {
   })
 }
 
-# --- COMPUTE & SECRETS ---
-
-# VULNERABILITY 3: CRITICAL - Hardcoded AWS Credentials in User Data
-resource "aws_instance" "production_web_server" {
-  ami           = "ami-0c55b1adcbfafe1e0" 
-  instance_type = "t2.micro"
-
-  # DANGEROUS: Secrets leaked in metadata/logs
-  user_data = <<-EOF
-              #!/bin/bash
-              export AWS_ACCESS_KEY_ID="AKIAEXAMPLE123456789"
-              export AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-              export DB_PASSWORD="super_secret_production_password_99"
-              EOF
-
-  tags = {
-    Name = "Web-Server-Prod"
-  }
+# VULNERABILITY 3: CRITICAL - Hardcoded AWS Provider Credentials (LEAK)
+# This is a representative leak to trigger P0/Critical alerts
+variable "aws_leak_example" {
+  default = "AKIAEXAMPLE123456789" # Simulated Access Key
 }
 
-# --- IDENTITY & ACCESS MANAGEMENT (IAM) ---
-
-# VULNERABILITY 4: CRITICAL - Over-privileged Admin Role assigned to a resource
-resource "aws_iam_role" "excessive_admin_role" {
-  name = "web-server-admin-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = { Service = "ec2.amazonaws.com" }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "admin_attach" {
-  role       = aws_iam_role.excessive_admin_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
-# --- APPLICATION SECRETS ---
-
-# VULNERABILITY 5: Exposed AI service key (Anthropic)
-variable "anthropic_key" {
-  description = "AI service key for automated data labeling"
-  default     = "sk-ant-api03-L69wa8p8p8p8p8p8p8p8p8p8p8p8p8p8p8p8p8p8p8p8p8-v2"
+variable "aws_secret_leak_example" {
+  default = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" # Simulated Secret Key
 }
