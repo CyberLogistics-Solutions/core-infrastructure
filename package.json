@@ -1,7 +1,14 @@
 {
   "name": "cyber-logistics-app",
   "version": "1.0.0",
+  "description": "Production app with intentional supply chain vulnerabilities",
+  "main": "index.js",
   "dependencies": {
-    "lodash": "4.17.4"
+    "lodash": "4.17.4",
+    "log4js": "0.6.0",
+    "axios": "0.18.0"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
